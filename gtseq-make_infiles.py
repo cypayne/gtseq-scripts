@@ -75,7 +75,7 @@ if DEBUG:
       out.write('\n')
 
 assayinfo = open("assayinfo.txt", 'w')
-locusinfo = open("locusinfo.txt", 'w')
+locusinfo = open("locusinfo.csv", 'w')
 header = True
 with open(primer_file) as prim:
   for line in prim:
@@ -91,6 +91,12 @@ with open(primer_file) as prim:
     snp_pos = int(name_pos[1])
     if DEBUG: print(snp_pos)
     primer = line.split(',')[1]
+#    rev_primer = line.split(',')[2] #XXX for including rev in assayinfo
+
+    #XXX shave off first 20bp (adapter) of each primer
+    primer = primer.replace('CGACAGGTTCAGAGTTCTACAGTCCGACGATC','')
+#    rev_primer = rev_primer.replace('GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT','')
+#    rev_primer_rc = Seq(rev_primer).reverse_complement()
 
     # set start and end positions for probe sequence
     probe_start = snp_pos-FLANK-1
@@ -119,7 +125,8 @@ with open(primer_file) as prim:
 
       # snp_dict[snp_name] = [primer,ref_allele,alt_allele,ref_probe,alt_probe]
       # write all relevant values in specific format to each outfile
-      assayinfo.write(snp_name+','+primer+','+ref_probe+','+alt_probe+'\n')
+      assayinfo.write(snp_name+'\t'+primer+'\t'+ref_probe+'\t'+alt_probe+'\n')
+#      assayinfo.write(snp_name+'\t'+primer+'\t'+ref_probe+'\t'+alt_probe+'\t'+str(rev_primer_rc)+'\n')
       locusinfo.write(snp_name+','+ref_allele+','+alt_allele+','+ref_probe+','+alt_probe+','+primer+'\n')
 
 # write all snps that weren't added to out files

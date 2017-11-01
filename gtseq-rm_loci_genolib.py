@@ -11,6 +11,14 @@
                  a GTseq output file, from which we will find
                  loci with missing data for all samples (and
                  which therefore should be removed)
+           %_threshold - 
+                 integer value, corresponds to the percentage of
+                 samples a locus must have data for in order for
+                 a locus to be kept
+                 ex. if %_threshold is 90, then you want to keep
+                     any locus that has data for 90% or more of the
+                     samples (i.e. only 10% missing data, or less, 
+                     is allowed for a locus to be kept)
 
     output: Library_Genotypes_filtered.csv -
                  Library_Genotypes.csv contents without empty
@@ -19,7 +27,7 @@
                  a list of empty loci that were removed from 
                  Library_Genotypes.csv
 
-    usage: ./gtseq-rm_loci_genolib.py Library_Genotypes.csv 
+    usage: ./gtseq-rm_loci_genolib.py Library_Genotypes.csv %_threshold_missing_data 
 
     CYP 10/04/2017
 '''
@@ -28,12 +36,18 @@ import sys
 from csv import DictReader
 from csv import writer
 
+# percentage of data that is missing to qualify
+# getting rid of a loci
+threshold = (100.0 - int(sys.argv[2]))
+
 # specify # of columns with no loci data (to skip)
 NUM_SKIP = 5
+
 header = True
 loci_to_remove = []
 loci_to_keep = []
 
+row_count = 0.0
 # open the file in universal line ending mode 
 with open(sys.argv[1], 'rU') as infile:
   # read the file as a dictionary for each row ({ header : value })
@@ -44,18 +58,31 @@ with open(sys.argv[1], 'rU') as infile:
   # create a dictionary of lists for each column/loci name 
   # { locus : [snps] }
   for row in reader:
+    row_count += 1
     for header, value in row.items():
       try:
         data[header].append(value)
       except KeyError:
         data[header] = [value]
-
   for locus in fields[NUM_SKIP:]:
-    if (all(x == '00' for x in data[locus][NUM_SKIP:])) == True:
+    remove = False
+    missing_data_ctr = 0.0
+    for x in data[locus][NUM_SKIP:]:
       # if every SNP value at this locus is missing ('00')
       # then add to list of loci to remove, & remove from dict
+      if x == '00': missing_data_ctr += 1
+      # print(missing_data_ctr)
+      missing_ratio = (missing_data_ctr/row_count)*100.0 
+      if missing_ratio >= threshold: 
+        print(missing_ratio)
+        remove = True
+        break
+    if remove:
       loci_to_remove.append(locus)
       del data[locus]
+    #if (all(x == '00' for x in data[locus][NUM_SKIP:])) == True:
+    #  loci_to_remove.append(locus)
+    #  del data[locus]
     else:
       loci_to_keep.append(locus)
   
@@ -75,6 +102,9 @@ with open(filtered_file, 'wb') as outfile:
 with open('removed_loci.txt', 'w') as out:
   for locus in loci_to_remove:
     out.write(locus + '\n')
+
+
+print(loci_to_keep)
 
 # Print some info to STDOUT
 print('\t************************************************************')
