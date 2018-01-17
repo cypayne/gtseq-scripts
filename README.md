@@ -44,21 +44,21 @@ SNP), then you would use the following: `./extract_seqs.py example_contig_name_r
 
 3) Run GTseq HashSeqs on all your sample .fastq files using:
 ```
-bash bulk-gtseq-hash.sh *.fastq
+bash bulk-gtseq-hash.sh PATH_TO_GTSEQ_SCRIPTS *.fastq
 ```
 + Output: one .hash file per .fastq file
 + This script runs each sample through the `GTseq_HashSeqs.pl` script, which collects and counts unique reads in the sequence file.
 
 4) Run GTseq SeqTest on all your .hash files using:
 ```
-bash bulk-gtseq-seqtest.sh AssayInfo.txt *.hash
+bash bulk-gtseq-seqtest.sh PATH_TO_GTSEQ_SCRIPTS AssayInfo.txt *.hash
 ```
 + Output: one .seqtest.csv file per .hash file
 + This script runs each sample through the `GTseq_SeqTest_v2.pl` script, which counts the occurrence of the forward primer and probe sequences, and the number of times they occur in the same sequence. 
 
 5) Run GTseq Genotyper on all your sample files (.fastq) using:
 ```
-bash bulk-gtseq-geno.sh LocusInfo.txt *.fastq
+bash bulk-gtseq-geno.sh PATH_TO_GTSEQ_SCRIPTS LocusInfo.txt *.fastq
 ```
 + Output: one .geno file per .fastq file
 + This script runs each sample through the `GTseq_Genotyper_v2.pl` script, which collects and organizes genotype data and statistics from each fastq .hash file.
