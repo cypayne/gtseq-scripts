@@ -30,4 +30,3 @@ with open('removed_samples.txt', 'w') as out:
     out.write(sample + '\n')
 
 print(samples_to_remove)
-

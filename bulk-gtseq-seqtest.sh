@@ -1,9 +1,10 @@
 #!/bin/bash
-# usage: bash ./bulk-gtseq-seqtest.sh assayinfo.txt hash_files 
+# usage: bash ./bulk-gtseq-seqtest.sh path_to_gtseq_scripts assayinfo.txt hash_files 
 
-ASSAYINFO=$1
-FQ="${@:2}"
+GTSEQ_PATH=$1
+ASSAYINFO=$2
+FQ="${@:3}"
 for file in $FQ; do
   BASE=$( basename $file .hash )
-  perl /scratch/PI/spalumbi/Conch/Conch_SNP_Test/GTseq_Scripts03072017/pipeline/GTseq_SeqTest_v2.pl $ASSAYINFO $file > ${BASE}.seqtest.csv
+  perl $GTSEQ_PATH/GTseq_SeqTest_v2.pl $ASSAYINFO $file > ${BASE}.seqtest.csv
 done

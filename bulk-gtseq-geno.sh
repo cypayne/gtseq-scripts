@@ -1,9 +1,10 @@
 #!/bin/bash
-# usage: bash ./bulk-gtseq-genos.sh locusinfo.txt fasta_files 
+# usage: bash ./bulk-gtseq-genos.sh path_to_gtseq_scripts locusinfo.txt fasta_files 
 
-LOCUSINFO=$1
-FQ="${@:2}"
+GTSEQ_PATH=$1
+LOCUSINFO=$2
+FQ="${@:3}"
 for file in $FQ; do
-  perl /scratch/PI/spalumbi/Conch/Conch_SNP_Test/GTseq_Scripts03072017/pipeline/GTseq_Genotyper_v2.pl $LOCUSINFO $file > ${file}.genos
+  perl $GTSEQ_PATH/GTseq_Genotyper_v2.pl $LOCUSINFO $file > ${file}.genos
 done
 

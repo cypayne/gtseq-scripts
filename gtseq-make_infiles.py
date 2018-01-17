@@ -3,7 +3,7 @@
 ''' Script that creates input files (AssayInfo & LocusInfo)
     required by GTSeq pipeline
           
-    input:  contig file (fastq) 
+    input:  sequence file (fastq) 
             vcf file (vcf)
             primer file (csv):
               Contains the contig #, SNP position, and 
@@ -12,8 +12,8 @@
                     Contig#-POS,FWD-primer
               where Contig#-POS is the SNP name
 
-    output: assayinfo.txt - first input file
-            locusinfo.txt - second input file
+    output: AssayInfo.txt - first input file
+            LocusInfo.txt - second input file
             missing_snps.txt - file with snps that were
                                not added to prior 2 output files
 
@@ -29,7 +29,7 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 
 if len(sys.argv) != 4:
-  print("ERROR: Please specify a contigs (fasta), vcf, and " + \
+  print("ERROR: Please specify a contigs (fasta), snp (vcf), and " + \
           "primer file (csv).")
   sys.exit()
 
@@ -42,9 +42,13 @@ missing_list = []
 ref_allele, alt_allele = '', ''
 ref_probe, alt_probe = '', ''
 
+
 # change these variables as needed
 FLANK = 3 # num of bps that should flank snp in probe
 DEBUG = False # specify True to display DEBUG msgs 
+REMOVE_ADAPTER = False # specify True to remove adapter sequence
+adapter = 'CGACAGGTTCAGAGTTCTACAGTCCGACGATC' # adapter to remove
+
 
 # Process FASTA file
 # create dictionary of contigs from fasta file
@@ -74,8 +78,8 @@ if DEBUG:
         out.write(value+' ')
       out.write('\n')
 
-assayinfo = open("assayinfo.txt", 'w')
-locusinfo = open("locusinfo.csv", 'w')
+assayinfo = open("AssayInfo.txt", 'w')
+locusinfo = open("LocusInfo.csv", 'w')
 header = True
 with open(primer_file) as prim:
   for line in prim:
@@ -91,12 +95,13 @@ with open(primer_file) as prim:
     snp_pos = int(name_pos[1])
     if DEBUG: print(snp_pos)
     primer = line.split(',')[1]
-#    rev_primer = line.split(',')[2] #XXX for including rev in assayinfo
+    if ADD_REV_PRIMER: rev_primer = line.split(',')[2] #for including rev in assayinfo
 
-    #XXX shave off first 20bp (adapter) of each primer
-    primer = primer.replace('CGACAGGTTCAGAGTTCTACAGTCCGACGATC','')
-#    rev_primer = rev_primer.replace('GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT','')
-#    rev_primer_rc = Seq(rev_primer).reverse_complement()
+    # if enabled, shave off adapter from each primer
+    if REMOVE_ADAPTER: 
+      primer = primer.replace(adapter,'')
+      if ADD_REV_PRIMER: rev_primer = rev_primer.replace(adapter,'')
+    if ADD_REV_PRIMER: rev_primer_rc = Seq(rev_primer).reverse_complement()
 
     # set start and end positions for probe sequence
     probe_start = snp_pos-FLANK-1
@@ -125,8 +130,10 @@ with open(primer_file) as prim:
 
       # snp_dict[snp_name] = [primer,ref_allele,alt_allele,ref_probe,alt_probe]
       # write all relevant values in specific format to each outfile
-      assayinfo.write(snp_name+'\t'+primer+'\t'+ref_probe+'\t'+alt_probe+'\n')
-#      assayinfo.write(snp_name+'\t'+primer+'\t'+ref_probe+'\t'+alt_probe+'\t'+str(rev_primer_rc)+'\n')
+      if ADD_REV_PRIMER: 
+        assayinfo.write(snp_name+'\t'+primer+'\t'+ref_probe+'\t'+alt_probe+'\t'+str(rev_primer_rc)+'\n')
+      else: 
+        assayinfo.write(snp_name+'\t'+primer+'\t'+ref_probe+'\t'+alt_probe+'\n')
       locusinfo.write(snp_name+','+ref_allele+','+alt_allele+','+ref_probe+','+alt_probe+','+primer+'\n')
 
 # write all snps that weren't added to out files

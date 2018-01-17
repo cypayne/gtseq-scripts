@@ -1,6 +1,8 @@
 #!/bin/bash
-# usage: bash ./bulk-gtseq-hash.sh fastq_files_to_hash
+# usage: bash ./bulk-gtseq-hash.sh path_to_gtseq_scripts fastq_files_to_hash
 
-for file in $@; do
-  perl /scratch/PI/spalumbi/Conch/Conch_SNP_Test/GTseq_Scripts03072017/pipeline/HashSeqs.pl $file > ${file}.hash 
+GTSEQ_PATH=$1
+FQ="${@:2}"
+for file in $FQ; do
+  perl $GTSEQ_PATH/HashSeqs.pl $file > ${file}.hash 
 done
